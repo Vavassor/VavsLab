@@ -46,3 +46,24 @@ sysinfo.txt
 
 # Crashlytics generated file
 crashlytics-build.properties
+
+# VRC stuff
+Assets/[Uu]don/
+Assets/VRCSDK/
+Assets/VRChat Examples
+Assets/VRChat Examples.meta
+Assets/UdonSharp/Scripts/Editor/
+Assets/VRCSDK.meta
+Assets/UdonSharp/Scripts/Editor.meta
+.idea/*
+Assets/Udon.meta
+[Aa]ssets/SerializedUdonPrograms*
+Packages/
+
+# UdonSharp stuff
+/Assets/UdonSharp/UdonSharpSettings.asset
+/Assets/UdonSharp/UdonSharpSettings.asset.meta
+Assets/Merlin.meta
+Assets/Merlin/Editor.meta
+Assets/Merlin/Editor/EasyEventEditor.cs
+Assets/Merlin/Editor/EasyEventEditor.cs.meta
