@@ -7560,7 +7560,7 @@ MonoBehaviour:
 
     World creators, you can
     use anything here for your world, too! The source code and assets are available
-    at https://github.com/vavassor/VavsLab'
+    at https://github.com/Vavassor/VavsLab'
 --- !u!222 &2064811303
 CanvasRenderer:
   m_ObjectHideFlags: 0
