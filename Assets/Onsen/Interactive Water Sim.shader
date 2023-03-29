@@ -2,8 +2,9 @@
 {
     Properties
     {
-        _Alpha("Alpha", float) = 0.5
+        _Alpha("Alpha", Range(0.01, 0.5)) = 0.5
         _Amplitude("Amplitude", float) = 0.5
+        _Dampening("Dampening", Range(0.0, 1.0)) = 0.005
         _CollisionTexturePrior("Collision Texture Prior", 2D) = "white" {}
         _CollisionTexture("Collision Texture", 2D) = "white" {}
         _WaveTexturePrior("Wave Texture Prior", 2D) = "white" {}
@@ -24,6 +25,7 @@
 
             half _Alpha;
             half _Amplitude;
+            half _Dampening;
             uniform sampler2D _CollisionTexture;
             uniform sampler2D _CollisionTexturePrior;
             uniform sampler2D _WaveTexture;
@@ -32,11 +34,15 @@
 
             float4 frag(v2f_customrendertexture IN) : SV_Target
             {
-                float4 z = _Alpha * (tex2D(_WaveTexture, IN.localTexcoord + float2(_WaveTexture_TexelSize.x, 0.0))
-                    + tex2D(_WaveTexture, IN.localTexcoord - float2(_WaveTexture_TexelSize.x, 0.0))
-                    + tex2D(_WaveTexture, IN.localTexcoord + float2(0.0, _WaveTexture_TexelSize.y))
-                    + tex2D(_WaveTexture, IN.localTexcoord - float2(0.0, _WaveTexture_TexelSize.y)))
-                    + (2.0 - 4.0 * _Alpha) * tex2D(_WaveTexture, IN.localTexcoord) - tex2D(_WaveTexturePrior, IN.localTexcoord);
+                float4 right = tex2D(_WaveTexture, IN.localTexcoord + float2(_WaveTexture_TexelSize.x, 0.0));
+                float4 left = tex2D(_WaveTexture, IN.localTexcoord - float2(_WaveTexture_TexelSize.x, 0.0));
+                float4 top = tex2D(_WaveTexture, IN.localTexcoord + float2(0.0, _WaveTexture_TexelSize.y));
+                float4 bottom = tex2D(_WaveTexture, IN.localTexcoord - float2(0.0, _WaveTexture_TexelSize.y));
+                float4 center = tex2D(_WaveTexture, IN.localTexcoord);
+                float4 centerPrior = tex2D(_WaveTexturePrior, IN.localTexcoord);
+                float4 laplacian = (left + right + top + bottom) - 4.0 * center;
+                float4 undampenedZ = _Alpha * laplacian + 2.0 * center - centerPrior;
+                float4 z = (1.0 - _Dampening) * undampenedZ;
 
                 float zNewPos = z.r;
                 float zNewNeg = z.g;
