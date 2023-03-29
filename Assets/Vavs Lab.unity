@@ -1642,8 +1642,8 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 949363986}
-  fogColor: {r: 0.34509805, g: 1, b: 0.8901961, a: 0}
-  fogDensity: 0.06
+  fogColor: {r: 0.15686275, g: 0.34901962, b: 0.40392157, a: 0}
+  fogDensity: 0.1
 --- !u!65 &949363988
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -2616,7 +2616,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1523570015}
   m_LocalRotation: {x: 0, y: -0.7071068, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: -8.5, y: 1.25, z: -5}
+  m_LocalPosition: {x: -8, y: 1.47, z: -5}
   m_LocalScale: {x: 2, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -3220,6 +3220,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6759095419728963412, guid: 8894fa7e4588a5c4fab98453e558847d,
         type: 3}
+      propertyPath: RespawnHeightY
+      value: -10
+      objectReference: {fileID: 0}
+    - target: {fileID: 6759095419728963412, guid: 8894fa7e4588a5c4fab98453e558847d,
+        type: 3}
       propertyPath: ReferenceCamera
       value: 
       objectReference: {fileID: 1775719728}
@@ -3553,6 +3558,10 @@ MonoBehaviour:
 
     Blur shader from "Two-pass Gaussian blur coeffifients generator"
     by lisyarus.
+
+
+    Caustics simulation based on Wave Equation (gpu-io) by Amanda
+    Ghassaei
 
 '
 --- !u!222 &1781752294

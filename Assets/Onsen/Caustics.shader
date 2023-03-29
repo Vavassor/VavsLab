@@ -1,4 +1,6 @@
-﻿Shader "Custom/Caustics"
+﻿// Based on Wave Equation example by Amanda Ghassaei
+// https://github.com/amandaghassaei/gpu-io/tree/main/examples/wave2d
+Shader "Custom/Caustics"
 {
     Properties
     {
