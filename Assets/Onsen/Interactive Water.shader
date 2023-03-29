@@ -34,6 +34,7 @@
         {
             float2 uv_MainTex;
             float4 screenPos;
+            half VFace : VFACE;
         };
 
         fixed4 _Color;
@@ -91,6 +92,7 @@
             float surfaceDepth = isInMirror() ? 1.0 : UNITY_Z_0_FAR_FROM_CLIPSPACE(IN.screenPos.z);
 
             float fogFade = saturate(exp2(-_FogThreshold * (depth - surfaceDepth)));
+            fogFade = saturate(IN.VFace + 1.5) * fogFade;
             fixed4 c = lerp(_FogColor, _Color, fogFade);
 
             o.Albedo = c.rgb;

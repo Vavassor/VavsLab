@@ -1642,7 +1642,7 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 949363986}
-  fogColor: {r: 0.0627451, g: 0.09411766, b: 0.16470589, a: 0}
+  fogColor: {r: 0.34509805, g: 1, b: 0.8901961, a: 0}
   fogDensity: 0.06
 --- !u!65 &949363988
 BoxCollider:
