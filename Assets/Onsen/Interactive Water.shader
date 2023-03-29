@@ -3,10 +3,11 @@
     Properties
     {
         _Color ("Color", Color) = (1,1,1,1)
+        [Enum(UnityEngine.Rendering.CullMode)] _CullMode("Cull Mode", Int) = 2
         _DisplacementAmount("Displacement Amount", Range(0, 1)) = 0.2
+        _FogColor("Fog Color", Color) = (1,1,1,1)
+        _FogThreshold("Fog threshold", float) = 0
         _Glossiness ("Smoothness", Range(0,1)) = 0.5
-        _MainTex ("Albedo (RGB)", 2D) = "white" {}
-        _Metallic ("Metallic", Range(0,1)) = 0.0
         _TangentMultiplier ("Tangent Multiplier", Range(0.001, 50.0)) = 0.1
         _WaterSizeX("Water Size Y", float) = 4.0
         _WaterSizeY("Water Size X", float) = 8.0
@@ -14,29 +15,32 @@
     }
     SubShader
     {
-        Tags {"Queue" = "Transparent" "RenderType" = "Transparent" }
+        Tags {"Queue" = "Transparent" "RenderType" = "Transparent"  "IgnoreProjector" = "True" }
         LOD 200
+        Cull [_CullMode]
 
         CGPROGRAM
         // Physically based Standard lighting model, and enable shadows on all light types
-        #pragma surface surf Standard fullforwardshadows vertex:vert alpha:auto
+        #pragma surface surf Standard vertex:vert alpha:auto fullforwardshadows addshadow 
 
         // Use shader model 3.0 target, to get nicer looking lighting
         #pragma target 3.0
 
+        UNITY_DECLARE_DEPTH_TEXTURE(_CameraDepthTexture);
         sampler2D _WaveTexture;
         float4 _WaveTexture_TexelSize;
-        sampler2D _MainTex;
 
         struct Input
         {
             float2 uv_MainTex;
+            float4 screenPos;
         };
 
         fixed4 _Color;
         half _DisplacementAmount;
+        fixed4 _FogColor;
+        half _FogThreshold;
         half _Glossiness;
-        half _Metallic;
         half _TangentMultiplier;
         half _WaterSizeX;
         half _WaterSizeY;
@@ -55,6 +59,12 @@
             texcoord.xy = 1.0 - texcoord.yx;
             float2 wave = tex2Dlod(_WaveTexture, texcoord).xy;
             return _DisplacementAmount * (wave.x - wave.y);
+        }
+
+        // From: https://github.com/cnlohr/shadertrixx/blob/main/README.md
+        inline bool isInMirror()
+        {
+            return unity_CameraProjection[2][0] != 0.f || unity_CameraProjection[2][1] != 0.f;
         }
 
         void vert(inout appdata_full v)
@@ -76,11 +86,14 @@
 
         void surf (Input IN, inout SurfaceOutputStandard o)
         {
-            // Albedo comes from a texture tinted by color
-            fixed4 c = tex2D (_MainTex, IN.uv_MainTex) * _Color;
+            float depth = tex2Dproj(_CameraDepthTexture, UNITY_PROJ_COORD(IN.screenPos));
+            depth = LinearEyeDepth(depth);
+            float surfaceDepth = isInMirror() ? 1.0 : UNITY_Z_0_FAR_FROM_CLIPSPACE(IN.screenPos.z);
+
+            float fogFade = saturate(exp2(-_FogThreshold * (depth - surfaceDepth)));
+            fixed4 c = lerp(_FogColor, _Color, fogFade);
+
             o.Albedo = c.rgb;
-            // Metallic and smoothness come from slider variables
-            o.Metallic = _Metallic;
             o.Smoothness = _Glossiness;
             o.Alpha = c.a;
         }
