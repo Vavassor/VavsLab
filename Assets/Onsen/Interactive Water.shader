@@ -15,9 +15,10 @@
     }
     SubShader
     {
-        Tags {"Queue" = "Transparent" "RenderType" = "Transparent"  "IgnoreProjector" = "True" }
+        Tags {"Queue" = "Transparent" "RenderType" = "Transparent" "IgnoreProjector" = "True" "IsEmissive" = "True" }
         LOD 200
         Cull [_CullMode]
+        ZWrite Off
 
         CGPROGRAM
         // Physically based Standard lighting model, and enable shadows on all light types
@@ -34,6 +35,7 @@
         {
             float2 uv_MainTex;
             float4 screenPos;
+            float3 worldPos;
             half VFace : VFACE;
         };
 
@@ -91,9 +93,16 @@
             depth = LinearEyeDepth(depth);
             float surfaceDepth = isInMirror() ? 1.0 : UNITY_Z_0_FAR_FROM_CLIPSPACE(IN.screenPos.z);
 
+            float3 viewDir = UnityWorldSpaceViewDir(IN.worldPos);
+            float3 reflectionDir = -viewDir;
+            float4 skyData = UNITY_SAMPLE_TEXCUBE_LOD(unity_SpecCube0, reflectionDir, UNITY_SPECCUBE_LOD_STEPS);
+            float3 skyColor = DecodeHDR(skyData, unity_SpecCube0_HDR);
+
             float fogFade = saturate(exp2(-_FogThreshold * (depth - surfaceDepth)));
             fogFade = saturate(IN.VFace + 1.5) * fogFade;
-            fixed4 c = lerp(_FogColor, _Color, fogFade);
+            fixed4 interior = _Color;
+            interior.rgb *= skyColor;
+            fixed4 c = lerp(_FogColor, interior, fogFade);
 
             o.Albedo = c.rgb;
             o.Smoothness = _Glossiness;
@@ -101,5 +110,4 @@
         }
         ENDCG
     }
-    FallBack "Diffuse"
 }
