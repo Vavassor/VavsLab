@@ -112,6 +112,7 @@
             float backgroundDepth = CorrectedLinearEyeDepth(depth, IN.rayFromCamera.w / IN.screenPos.w);
             float surfaceDepth = isInMirror() ? 1.0 : UNITY_Z_0_FAR_FROM_CLIPSPACE(IN.screenPos.z);
 
+            // Compute overall color
             float fogFade = saturate(exp2(-_FogThreshold * (backgroundDepth - surfaceDepth)));
             fogFade = saturate(IN.VFace + 1.5) * fogFade;
             fixed4 interior = _Color;
