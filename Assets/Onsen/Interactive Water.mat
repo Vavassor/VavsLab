@@ -88,7 +88,7 @@ Material:
     - _WaveFrequency: 10
     - _ZWrite: 1
     m_Colors:
-    - _Color: {r: 1, g: 1, b: 1, a: 0.078431375}
+    - _Color: {r: 1, g: 1, b: 1, a: 0.11764706}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _FogColor: {r: 0.34509793, g: 0.7194754, b: 1, a: 0.078431375}
+    - _FogColor: {r: 0.34509787, g: 0.7194754, b: 1, a: 0.11764706}
     - _WaterSize: {r: 4, g: 8, b: 0, a: 0}

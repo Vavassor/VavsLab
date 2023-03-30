@@ -27,7 +27,10 @@
         // Use shader model 3.0 target, to get nicer looking lighting
         #pragma target 3.0
 
+        #include "Depth.cginc"
+
         UNITY_DECLARE_DEPTH_TEXTURE(_CameraDepthTexture);
+        float4 _CameraDepthTexture_TexelSize;
         sampler2D _WaveTexture;
         float4 _WaveTexture_TexelSize;
 
@@ -36,7 +39,9 @@
             float2 uv_MainTex;
             float4 screenPos;
             float3 worldPos;
+            INTERNAL_DATA
             half VFace : VFACE;
+            float4 rayFromCamera;
         };
 
         fixed4 _Color;
@@ -70,7 +75,7 @@
             return unity_CameraProjection[2][0] != 0.f || unity_CameraProjection[2][1] != 0.f;
         }
 
-        void vert(inout appdata_full v)
+        void vert(inout appdata_full v, out Input o)
         {
             v.vertex.y = getOffset(v.vertex);
 
@@ -85,23 +90,32 @@
             float3 modifiedBitangent = posPlusBitangent - v.vertex;
             float3 modifiedNormal = cross(modifiedTangent, modifiedBitangent);
             v.normal = normalize(modifiedNormal);
+
+            UNITY_INITIALIZE_OUTPUT(Input, o);
+            
+            float4 worldPosition = mul(unity_ObjectToWorld, v.vertex);
+            o.rayFromCamera.xyz = worldPosition.xyz - _WorldSpaceCameraPos.xyz;
+            o.rayFromCamera.w = dot(UnityObjectToClipPos(v.vertex), CalculateFrustumCorrection());
         }
 
         void surf (Input IN, inout SurfaceOutputStandard o)
         {
-            float depth = tex2Dproj(_CameraDepthTexture, UNITY_PROJ_COORD(IN.screenPos));
-            depth = LinearEyeDepth(depth);
-            float surfaceDepth = isInMirror() ? 1.0 : UNITY_Z_0_FAR_FROM_CLIPSPACE(IN.screenPos.z);
-
+            // Compute reflection color
             float3 viewDir = UnityWorldSpaceViewDir(IN.worldPos);
             float3 reflectionDir = -viewDir;
-            float4 skyData = UNITY_SAMPLE_TEXCUBE_LOD(unity_SpecCube0, reflectionDir, UNITY_SPECCUBE_LOD_STEPS);
-            float3 skyColor = DecodeHDR(skyData, unity_SpecCube0_HDR);
+            float4 reflProbeData = UNITY_SAMPLE_TEXCUBE_LOD(unity_SpecCube0, reflectionDir, UNITY_SPECCUBE_LOD_STEPS);
+            float3 reflectionColor = DecodeHDR(reflProbeData, unity_SpecCube0_HDR);
 
-            float fogFade = saturate(exp2(-_FogThreshold * (depth - surfaceDepth)));
+            // Compute depth values to determine the amount of fog.
+            float2 uv = getDepthUVs(IN.screenPos, 0, _CameraDepthTexture_TexelSize);
+            float depth = SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, uv);
+            float backgroundDepth = CorrectedLinearEyeDepth(depth, IN.rayFromCamera.w / IN.screenPos.w);
+            float surfaceDepth = isInMirror() ? 1.0 : UNITY_Z_0_FAR_FROM_CLIPSPACE(IN.screenPos.z);
+
+            float fogFade = saturate(exp2(-_FogThreshold * (backgroundDepth - surfaceDepth)));
             fogFade = saturate(IN.VFace + 1.5) * fogFade;
             fixed4 interior = _Color;
-            interior.rgb *= skyColor;
+            interior.rgb *= reflectionColor;
             fixed4 c = lerp(_FogColor, interior, fogFade);
 
             o.Albedo = c.rgb;

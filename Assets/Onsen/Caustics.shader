@@ -5,6 +5,7 @@ Shader "Custom/Caustics"
     Properties
     {
         _LightMesh("Light Mesh", 2D) = "white" {}
+        _ScalingFactor("Scaling Factor", Range(0, 1)) = 0.2
     }
     SubShader
     {
@@ -21,6 +22,7 @@ Shader "Custom/Caustics"
 
             sampler2D _LightMesh;
             float4 _LightMesh_TexelSize;
+            half _ScalingFactor;
 
             float4 frag(v2f_customrendertexture IN) : SV_Target
             {
@@ -32,7 +34,7 @@ Shader "Custom/Caustics"
                 float2 priorPosition = texcoord * _LightMesh_TexelSize.zw;
                 float oldArea = length(ddx(position)) * length(ddy(position));
                 float newArea = length(ddx(priorPosition)) * length(ddy(priorPosition));
-                float amplitude = oldArea / newArea * 0.2;
+                float amplitude = oldArea / newArea * _ScalingFactor;
                 return float4(amplitude.xxx, 1);
             }
             ENDCG

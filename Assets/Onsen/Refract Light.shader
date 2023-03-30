@@ -25,16 +25,22 @@ Shader "Custom/Refract Light"
 
             half _Separation;
 
+            inline float getOffset(float2 texcoord)
+            {
+                float2 wave = tex2D(_HeightMap, texcoord).xy;
+                return wave.x - wave.y;
+            }
+
             float4 frag(v2f_customrendertexture IN) : SV_Target
             {
                 // Calculate a normal vector for height field.
                 float2 onePxX = float2(_HeightMap_TexelSize.x, 0.0);
                 float2 onePxY = float2(0.0, _HeightMap_TexelSize.y);
-                float center = tex2D(_HeightMap, IN.localTexcoord).x;
-                float n = tex2D(_HeightMap, IN.localTexcoord + onePxY).x;
-                float s = tex2D(_HeightMap, IN.localTexcoord - onePxY).x;
-                float e = tex2D(_HeightMap, IN.localTexcoord + onePxX).x;
-                float w = tex2D(_HeightMap, IN.localTexcoord - onePxX).x;
+                float center = getOffset(IN.localTexcoord);
+                float n = getOffset(IN.localTexcoord + onePxY);
+                float s = getOffset(IN.localTexcoord - onePxY);
+                float e = getOffset(IN.localTexcoord + onePxX);
+                float w = getOffset(IN.localTexcoord - onePxX);
                 float2 normalXY = float2(w - e, s - n) / 2.0;
                 // Clip normal amplitude to prevent triangle overlap / issues with triangle rendering order.
                 normalXY *= min(0.0075 / length(normalXY), 1.0);
