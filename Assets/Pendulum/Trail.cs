@@ -15,6 +15,8 @@ public class Trail : UdonSharpBehaviour
     {
         audioSource = GetComponent<AudioSource>();
         trailRenderer = GetComponent<TrailRenderer>();
+
+        trailRenderer.emitting = false;
     }
 
     public void OnMotionEnd()
