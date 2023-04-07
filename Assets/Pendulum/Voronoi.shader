@@ -24,7 +24,7 @@ Shader "Unlit/Voronoi"
 {
     Properties
     {
-        _MainTex ("Texture", 2D) = "white" {}
+        _NoiseTexture("Noise Texture", 2D) = "white" {}
     }
     SubShader
     {
@@ -55,17 +55,17 @@ Shader "Unlit/Voronoi"
             };
 
             float _AnimationTime;
-            sampler2D _MainTex;
-            float4 _MainTex_ST;
+            sampler2D _NoiseTexture;
+            float4 _NoiseTexture_ST;
             float _PulseTime;
 
-            float2 hash2(float2 p)
+            inline float2 hash2(float2 p)
             {
                 // texture based white noise
-                // return textureLod(iChannel0, (p + 0.5) / 256.0, 0.0).xy;
+                return tex2Dlod(_NoiseTexture, float4((p + 0.5) / 256.0, 0.0, 0.0)).xy;
 
                 // procedural white noise	
-                return frac(sin(float2(dot(p,float2(127.1,311.7)),dot(p, float2(269.5,183.3))))*43758.5453);
+                // return frac(sin(float2(dot(p,float2(127.1,311.7)),dot(p, float2(269.5,183.3))))*43758.5453);
             }
 
             float3 voronoi(float2 x, float t)
@@ -148,7 +148,7 @@ Shader "Unlit/Voronoi"
             {
                 v2f o;
                 o.vertex = UnityObjectToClipPos(v.vertex);
-                o.uv = TRANSFORM_TEX(v.uv, _MainTex);
+                o.uv = TRANSFORM_TEX(v.uv, _NoiseTexture);
                 UNITY_TRANSFER_FOG(o,o.vertex);
                 return o;
             }

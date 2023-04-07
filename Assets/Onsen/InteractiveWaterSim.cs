@@ -12,7 +12,7 @@ public class InteractiveWaterSim : UdonSharpBehaviour
     public CustomRenderTexture lightMesh;
     public CustomRenderTexture caustics;
 
-    void Start()
+    void OnEnable()
     {
         foreach (var texture in renderTextures)
         {
