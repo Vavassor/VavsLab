@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Velocity Indicator
+  m_Name: Headset Velocity
   m_Shader: {fileID: 4800000, guid: 6c51456f0e214154396a6e3ea20afe45, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
@@ -61,12 +61,11 @@ Material:
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
-    - _EntryIndex: 0
+    - _EntryIndex: 1
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
-    - _MaxSpeed: 6.41
-    - _MaxValue: 2
+    - _MaxValue: 1
     - _Metallic: 0
     - _Mode: 0
     - _OcclusionStrength: 1

@@ -4,12 +4,6 @@ using UnityEngine;
 using VRC.SDKBase;
 using VRC.Udon;
 
-public enum TriggerType
-{
-    Acceleration,
-    Velocity,
-}
-
 public enum EntryType
 {
     Player = 0,
@@ -22,19 +16,10 @@ public class MotionLink : UdonSharpBehaviour
 {
     private const float motionLinkVersion = 1.0f;
 
-    public float accelerationThreshold = 200.0f;
-    public float emissionDurationSeconds = 0.2f;
     public Material motionLinkMaterial;
     public CustomRenderTexture motionLinkTexture;
-    public TriggerType triggerType = TriggerType.Acceleration;
-    public float velocityThreshold = 7.0f;
-    public UdonBehaviour[] triggerTargets;
 
     private bool arePropIdsInitialized = false;
-    private readonly Vector3[] points = new Vector3[3];
-    private float priorDeltaTime = 0.016f;
-    private float secondsSinceTrigger = 0.0f;
-    private bool wasTriggerActive = false;
 
     private Vector3[] priorPositions = new Vector3[4];
     private Quaternion[] priorRotations = new Quaternion[4];
@@ -61,21 +46,13 @@ public class MotionLink : UdonSharpBehaviour
 
     void Start()
     {
-        for (var i = 0; i < points.Length; i++)
-        {
-            points[i] = transform.position;
-        }
-
         playerApi = Networking.LocalPlayer;
     }
 
     void Update()
     {
-        UpdateTrigger();
         UpdateEntries();
         SendMotionData();
-
-        priorDeltaTime = Time.deltaTime;
     }
 
     private Vector3 GetAngularVelocity(Quaternion q0, Quaternion q1, float deltaTime)
@@ -114,29 +91,6 @@ public class MotionLink : UdonSharpBehaviour
         versionPropId = VRCShader.PropertyToID("_Version");
 
         arePropIdsInitialized = true;
-    }
-
-    private bool IsTriggerActive(float acceleration, float velocity)
-    {
-        switch (triggerType)
-        {
-            default:
-            case TriggerType.Acceleration:
-                return acceleration >= accelerationThreshold;
-            case TriggerType.Velocity:
-                return velocity >= velocityThreshold;
-        }
-    }
-
-    private void SendEventsToTargets(string eventName)
-    {
-        if (triggerTargets != null)
-        {
-            foreach (var target in triggerTargets)
-            {
-                target.SendCustomEvent(eventName);
-            }
-        }
     }
 
     private void SendMotionData()
@@ -195,43 +149,5 @@ public class MotionLink : UdonSharpBehaviour
         var trackingDataType = GetTrackingDataType(entryType);
         var trackingData = playerApi.GetTrackingData(trackingDataType);
         UpdateEntry(entryType, trackingData.position, trackingData.rotation);
-    }
-
-    private void UpdateTrigger()
-    {
-        points[2] = points[1];
-        points[1] = points[0];
-        points[0] = transform.position;
-
-        bool isTriggerActive = wasTriggerActive;
-
-        if (Time.deltaTime != 0.0f && priorDeltaTime != 0.0f)
-        {
-            var velocity = (points[1] - points[0]).magnitude / Time.deltaTime;
-            var priorVelocity = (points[2] - points[1]).magnitude / priorDeltaTime;
-            var acceleration = Mathf.Abs(velocity - priorVelocity) / Time.deltaTime;
-            isTriggerActive = IsTriggerActive(acceleration, velocity);
-        }
-
-        if (isTriggerActive)
-        {
-            if (!wasTriggerActive)
-            {
-                SendEventsToTargets("OnMotionStart");
-                wasTriggerActive = true;
-            }
-
-            secondsSinceTrigger = emissionDurationSeconds;
-        }
-        else
-        {
-            secondsSinceTrigger -= Time.deltaTime;
-
-            if (wasTriggerActive && secondsSinceTrigger <= 0.0f)
-            {
-                SendEventsToTargets("OnMotionEnd");
-                wasTriggerActive = false;
-            }
-        }
     }
 }
